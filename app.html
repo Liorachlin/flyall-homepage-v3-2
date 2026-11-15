@@ -2228,7 +2228,7 @@ body:not(.hdr-solid) .hdr{background-color:transparent;-webkit-backdrop-filter:n
        flyall-homepage-journey-v3.1.html); v3.2 starts identical, and its changes are written under body[data-ver="3.2"] -->
   <div class="vswitch vswitch--ver" id="verSwitch" hidden role="group" aria-label="גרסה"><button type="button" data-ver="3.1">v3.1</button><button type="button" data-ver="3.2">v3.2</button></div>
   <!-- v3.2 (designer, 2026-11-12): the search box as product doors (as now) or as v2 had it, the tabs over one field -->
-  <div class="vswitch vswitch--sform" id="sformSwitch" hidden data-only="3.2" role="group" aria-label="קומפוננטת החיפוש"><button type="button" data-sform="doors">דלתות מוצר</button><button type="button" data-sform="tabs">טאבים ושדה (v2)</button></div>
+  <div class="vswitch vswitch--sform" id="sformSwitch" hidden data-only="3.2" role="group" aria-label="קומפוננטת החיפוש"><button type="button" data-sform="tabs">טאבים ושדה (v2)</button><button type="button" data-sform="doors">דלתות מוצר</button></div>
   <!-- v3.2 (designer, 2026-11-15): how the results page shows that Sol is working too while the hotels load -->
   <div class="vswitch vswitch--wait" id="waitSwitch" hidden data-only="3.2" role="group" aria-label="סול בזמן הטעינה"><button type="button" data-wait="lines">שתי שורות</button><button type="button" data-wait="slots">3 משבצות</button></div>
   <div class="vswitch vswitch--solid" id="solIdSwitch" data-only="3.1" role="group" aria-label="הצגת סול"><button type="button" data-solid="chat">שורת צ׳אט</button><button type="button" data-solid="tag">תגית על התמונה</button></div>
@@ -4158,9 +4158,10 @@ document.querySelector('.foot').addEventListener('click', e => { if (e.target.cl
 
   /* v3.2: which search box, the product doors or v2's tabs over one field; remembered, doors first */
   const sfSw = document.getElementById('sformSwitch');
-  let SF = 'doors';
+  /* the designer, 2026-11-15: back to v2's tabs and field by default (a new key, so everyone starts there again; doors stay a state) */
+  let SF = 'tabs';
   const applySf = () => { document.body.dataset.sform = SF; sfSw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.sform === SF)); dispatchEvent(new Event('scroll')); };
-  sfSw.addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.sform === SF) return; SF = b.dataset.sform; applySf(); try { localStorage.setItem('flyall-sform', SF); } catch (err) {} });
+  sfSw.addEventListener('click', e => { const b = e.target.closest('button'); if (!b || b.dataset.sform === SF) return; SF = b.dataset.sform; applySf(); try { localStorage.setItem('flyall-sform2', SF); } catch (err) {} });
   new IntersectionObserver(es => sfSw.classList.toggle('is-off', !es[0].isIntersecting), { threshold: .2 }).observe(document.getElementById('search'));
   applySf();
 
