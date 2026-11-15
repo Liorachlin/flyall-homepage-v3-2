@@ -33,7 +33,8 @@ body{background:radial-gradient(50% 40% at 85% 0%,#FBEAF8,transparent 70%),radia
 <aside class="ctl" id="ctl" aria-label="מתגי הפרוטוטייפ" hidden><p class="ctl__t">מתגי הפרוטוטייפ</p><div id="ctlList"></div></aside>
 <script>
   const phone = document.querySelector('.phone'), frame = phone.querySelector('iframe'), ctl = document.getElementById('ctl'), list = document.getElementById('ctlList');
-  frame.src = 'app.html';
+  fetch('version.txt?t=' + Date.now(), { cache: 'no-store' }).then(r => r.text())
+    .then(v => { frame.src = 'app.html?v=' + v.trim(); }).catch(() => { frame.src = 'app.html'; });
   const NAMES = { userSwitch: 'משתמש', abarSwitch: 'שורת AI של סול', partView: 'תצוגת המוצרים' };
   const PANEL_W = 228 + 24 + 32;   // the panel, its margin from the edge, and a gap to the phone
   let wide = false;
