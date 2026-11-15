@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlyAll עמוד הבית v3.2</title>
+<style>
+/* the journey prototype v3 (from 2026-11-09; v1 is frozen in publish-v1/, v2 in publish-v2/) inside a phone, as large as the window allows — the same frame as the Dream Store prototype */
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden}
+body{background:radial-gradient(50% 40% at 85% 0%,#FBEAF8,transparent 70%),radial-gradient(45% 40% at 10% 100%,#E8F0FF,transparent 70%),#F4F5FA}
+.phone{position:fixed;left:50%;top:50%;width:414px;height:868px;padding:12px;border-radius:56px;background:#0B0C14;transform-origin:center;transform:translate(-50%,-50%);
+  box-shadow:0 30px 70px rgba(24,22,64,.28),inset 0 0 0 2px #2A2C38}
+.phone iframe{display:block;width:390px;height:844px;border:0;border-radius:44px;background:#fff}
+/* the prototype switches, beside the phone on the right so they cover nothing of the screen (designer, 2026-11-03).
+   The page inside reports its switches; a press here presses the page's own button */
+.ctl{position:fixed;right:24px;top:50%;transform:translateY(-50%);width:228px;display:flex;flex-direction:column;gap:18px;padding:20px 18px;border-radius:24px;direction:rtl;
+  background:rgba(255,255,255,.6);-webkit-backdrop-filter:saturate(160%) blur(20px);backdrop-filter:saturate(160%) blur(20px);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.8),0 12px 32px rgba(14,22,38,.08);font-family:'Ploni',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#0E1626}
+.ctl[hidden]{display:none}
+.ctl__t{margin:0;font:600 13px/1.2 inherit;letter-spacing:.04em;color:#5A6272}
+.ctl__g{display:flex;flex-direction:column;gap:8px}
+.ctl__g h3{margin:0;font:600 15px/1.2 'Ploni',system-ui,sans-serif}
+.ctl__b{display:flex;flex-wrap:wrap;gap:6px}
+.ctl__b button{padding:8px 12px;border:0;border-radius:999px;cursor:pointer;background:rgba(255,255,255,.7);box-shadow:inset 0 0 0 1px rgba(14,22,38,.08);
+  font:500 13px/1 'Ploni',system-ui,sans-serif;color:#5A6272}
+.ctl__b button:hover{color:#0E1626}
+.ctl__b button[aria-pressed="true"]{background:linear-gradient(90deg,rgba(27,94,206,.14),rgba(130,74,234,.14) 50%,rgba(246,61,228,.14)),#fff;box-shadow:inset 0 0 0 1px rgba(130,74,234,.25);color:#4B3BB0}
+.ctl__b button:focus-visible{outline:2px solid #4B3BB0;outline-offset:2px}
+/* on a real phone the page simply fills the screen, and the switches stay inside it */
+@media (max-width:600px){ .phone{inset:0;left:0!important;top:0;width:auto;height:auto;padding:0;border-radius:0;background:#fff;box-shadow:none;transform:none!important} .phone iframe{width:100%;height:100%;border-radius:0} }
+</style>
+<div class="phone"><iframe title="FlyAll עמוד הבית v3"></iframe></div>
+<aside class="ctl" id="ctl" aria-label="מתגי הפרוטוטייפ" hidden><p class="ctl__t">מתגי הפרוטוטייפ</p><div id="ctlList"></div></aside>
+<script>
+  const phone = document.querySelector('.phone'), frame = phone.querySelector('iframe'), ctl = document.getElementById('ctl'), list = document.getElementById('ctlList');
+  frame.src = 'app.html';
+  const NAMES = { verSwitch: 'גרסה', userSwitch: 'משתמש', sformSwitch: 'קומפוננטת החיפוש', waitSwitch: 'סול בזמן הטעינה',solIdSwitch: 'הצגת סול',bgSwitch: 'רקע עליון', abarSwitch: 'שורת AI של סול', storySwitch: 'הנרטיב', sswitch: 'צורת החיפוש', partView: 'תצוגת המוצרים', partSwitch: 'כמה מוצרים' };
+  const PANEL_W = 228 + 24 + 32;   // the panel, its margin from the edge, and a gap to the phone
+  let wide = false;
+  /* a real 390×844 screen inside, scaled so all of it — frame included — fits the window with a margin; on a wide window the
+     switches take the right side and the phone stays centred unless it would run into them */
+  const fit = () => {
+    wide = innerWidth > 760;
+    ctl.hidden = !wide;
+    if (frame.contentWindow) frame.contentWindow.postMessage({ flyall: 'host', panel: wide }, '*');
+    if (innerWidth <= 600) return;
+    const s = Math.min((innerHeight - 40) / 868, (innerWidth - 40 - (wide ? PANEL_W : 0)) / 414, 1);
+    const x = wide ? Math.min(innerWidth / 2, innerWidth - PANEL_W - 414 * s / 2) : innerWidth / 2;
+    phone.style.left = x + 'px';
+    phone.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  };
+  addEventListener('resize', fit); fit();
+  frame.addEventListener('load', fit);
+  addEventListener('message', e => {
+    if (e.source !== frame.contentWindow || !e.data || e.data.flyall !== 'switches') return;
+    list.textContent = '';
+    list.className = 'ctl__g';
+    list.style.gap = '18px';
+    const ORDER = Object.keys(NAMES), rank = sw => (ORDER.indexOf(sw.id) + 1 || 99);
+    e.data.list.slice().sort((a, b) => rank(a) - rank(b)).forEach(sw => {
+      const g = document.createElement('div'); g.className = 'ctl__g';
+      const h = document.createElement('h3'); h.textContent = NAMES[sw.id] || sw.label; g.appendChild(h);
+      const row = document.createElement('div'); row.className = 'ctl__b'; row.setAttribute('role', 'group'); row.setAttribute('aria-label', h.textContent);
+      sw.btns.forEach((b, i) => {
+        const btn = document.createElement('button'); btn.type = 'button';
+        btn.textContent = sw.id === 'partSwitch' ? b.t.replace('מוצר ', '') : b.t;
+        btn.setAttribute('aria-pressed', b.on);
+        btn.addEventListener('click', () => frame.contentWindow.postMessage({ flyall: 'press', id: sw.id, i }, '*'));
+        row.appendChild(btn);
+      });
+      g.appendChild(row); list.appendChild(g);
+    });
+  });
+</script>
