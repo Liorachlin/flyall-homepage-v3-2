@@ -1929,8 +1929,9 @@ body:not(.hdr-solid) .hdr{background-color:transparent;-webkit-backdrop-filter:n
 .atag__t{display:inline-block;max-width:180px;overflow:hidden;transition:max-width .3s var(--ease),opacity .2s ease}
 .atag{transition:opacity .2s ease,transform .25s ease,visibility 0s .25s,padding .3s var(--ease),gap .3s var(--ease)}
 .hpsolh{scroll-margin-top:76px}
-/* the full-screen destination step (v3.2, 2026-11-19) */
+/* the full-screen search drawer (v3.2, 2026-11-19): every step, the destination one focused on its field */
 .sheet.is-full{align-items:flex-start}
+.sheet.is-full .sheet__grip{display:none}
 .sheet.is-full .sheet__panel{height:var(--vvh,100dvh);max-height:none;margin-top:var(--vvt,0px);border-radius:0;padding-top:max(12px,env(safe-area-inset-top,0px));transition:transform .38s var(--ease),height .2s ease}
 .sh--full{gap:10px;justify-content:flex-start;margin-bottom:12px}
 .ac__h{margin:18px 4px 6px;font:600 14px/1 var(--ds-font);color:var(--v2-ink-2)}
@@ -3243,12 +3244,15 @@ body:not(.hdr-solid) .hdr{background-color:transparent;-webkit-backdrop-filter:n
     if (SURF === 'inline') { renderInline(focusQ); return; }
     const top = panel.scrollTop;
     panel.innerHTML = sheetHTML();
-    sheet.classList.toggle('is-full', fullWhere());   // v3.2: typing the destination takes the whole screen
+    sheet.classList.toggle('is-full', document.body.dataset.ver === '3.2');   // v3.2 (designer, 2026-11-19): the whole drawer takes the screen
     panel.scrollTop = fullWhere() ? 0 : top;
     if (focusQ) { const q = $('#srq'); if (q) { q.focus({ preventScroll: true }); q.setSelectionRange(q.value.length, q.value.length); } }
   }
   const fullWhere = () => document.body.dataset.ver === '3.2' && product === 'hotels' && SR.stage !== 2 && SR.open === 'where';
-  /* the screen's visible height, so the full-screen step ends right above the phone's keyboard */
+  /* the screen's visible height, so the full-screen drawer ends right above the phone's keyboard; a field that takes the keyboard is
+     brought into view once it has opened */
+  panel.addEventListener('focusin', e => { if (document.body.dataset.ver !== '3.2' || !e.target.matches('input,textarea')) return;
+    setTimeout(() => e.target.scrollIntoView({ block: 'center', behavior: reduced ? 'auto' : 'smooth' }), 320); });
   if (window.visualViewport) { const vv = window.visualViewport, fit = () => { document.documentElement.style.setProperty('--vvh', vv.height + 'px'); document.documentElement.style.setProperty('--vvt', vv.offsetTop + 'px'); };
     vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); fit(); }
   let lastFocus = null;
